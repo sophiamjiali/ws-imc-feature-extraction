@@ -7,3 +7,20 @@ DevNotes:
 - initialized the new first convolutional layer to take the x amount of markers
     - chose Kaiming initialzation as the method (for ReLU activation)
 - specified average pooling
+- adapted standard SimCLR augmentations for highly multiplexed: 
+    - channel-wise augmentations
+    - avoiding colour jitter, random grayscale (not RGB), mixing/merging channels
+
+
+Reminders:
+- verify with Shanza all the hard-coded numbers: 
+    - augmentations.py (crop size)
+- important: a paper chose only one augmentation method: random cropping
+- need to tune the strength of the Guassian blur
+
+
+
+
+Timeline:
+- try different augmentations, then choose which perform the best (currently choosing standard mix)
+    - the paper I read chose only random cropping as the best
