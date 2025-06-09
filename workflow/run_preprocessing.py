@@ -10,32 +10,62 @@ PyTorch Version: 2.7.1
 
 # == Imports ==========================================================
 
-from augmentations import Compose
+import yaml
+import argparse
+import os
+
+from src.preprocess import mcd_to_tiff, load_image
+from simclr.augmentations import Compose, build_augmentation_pipeline, RandomCrop, RandomHorizontalFlip, RandomVerticalFlip, RandomRotation, RandomTranslation, ChannelWiseGaussianBlur, ChannelWiseGaussianNoise, ChannelWiseIntensityScaling
 
 # == Preprocess Data ==================================================
 
-## 1. Convert Raw IMC MCD files to TIFF files
+def main(config):
 
-## 2. Extract pixel-level intensities as NumPy Array
+    ##  Convert all raw IMC MCD files to TIFF files
+    mcd_dir = config['directories'].get('mcd_dir', '')
+    tiff_dir = config['directories'].get('tiff_dir', '')
+    mcd_to_tiff(mcd_dir, tiff_dir)
 
-## 3. Preprocess the data: normalization, scaling, etc.
+    ## Initialize the augmentation pipeline as specified by the configurations
+    data_transforms = build_augmentation_pipeline(config['augmentation'])
 
-## 4. Extract patches using a sliding window approach
+    ## Preprocess each TIFF file
+    for file_name in os.listdir(tiff_dir):
+        if file_name.lower().endswith(('.tiff', 'tif', 'ome.tiff')):
 
-## 5. Augment the patches for SimCLR
-data_transforms = {
-    'train': Compose([
-        RandomHorizontalFlip(),
-        ...
-    ]),
-    'evaluate': Compose([
+            # A. Load the TIFF image as a NumPy Array
+            file_path = os.path.join(tiff_dir, file_name)
+            img = load_image(file_path)
 
-    ])
-}
+            # B. Preprocess the data
+            img = denoise(img, config['preprocessing']['denoise'])
+
+            # C. Extract patches using a sliding window approach
+
+            # D. Augment the patches for SimCLR
+            for patch in x:
+                
+                view1 = data_transforms(patch)
+                view2 = data_transforms(patch)
+
+    # E. Create batches of augmented patches (pooled across all IMC images)
 
 
-## 6. Create batches of augmented patches
+    # ... haven't verified below yet
 
-# Convert NumPy arrays into Tensor objects
+    # Convert NumPy arrays into Tensor objects
 
-# Create batcheshow
+    # Create batches
+
+if __name__ == "__main__":
+
+    # parse the configuration file
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type = str, required = True,
+                         help = 'Path to YAML config file')
+    args = parser.parse_args()
+
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+
+    main(config)

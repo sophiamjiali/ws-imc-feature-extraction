@@ -16,8 +16,8 @@ from skimage.util import random_noise
 
 # == Composition Class ================================================
 
-# Applies the transformations upon the provided image
 class Compose:
+    # Applies the transformations upon the provided image
     
     def __init__(self, transforms):
         self.transforms = transforms
@@ -26,6 +26,31 @@ class Compose:
         for t in self.transforms:
             img = t(img)
         return img
+    
+
+def build_augmentation_pipeline(aug_cfg):
+    # Builds the augmentation list per the provided configurations
+
+    transforms = []
+
+    if aug_cfg.get('random_cropping', {}).get('enabled', True):
+        transforms.append(RandomCrop(aug_cfg['random_cropping']['crop_size']))
+    if aug_cfg.get('random_flip', True):
+        transforms.append(RandomHorizontalFlip())
+        transforms.append(RandomVerticalFlip())
+    if aug_cfg.get('random_rotation', True):
+        transforms.append(RandomRotation())
+    if aug_cfg.get('random_translation', {}).get('enabled', True):
+        transforms.append(RandomTranslation(aug_cfg['random_translation']['max_shift']))
+    if aug_cfg.get('gaussian_blur', True):
+        transforms.append(ChannelWiseGaussianBlur())
+    if aug_cfg.get('gaussian_noise', True):
+        transforms.append(ChannelWiseGaussianNoise())
+    if aug_cfg.get('intensity_scaling', {}).get('enabled', True):
+        transforms.append(ChannelWiseIntensityScaling(aug_cfg['intensity_scaling']['scale_range']))
+
+    return Compose(transforms) 
+
 
 # == Image Augmentations Classes ======================================
 
@@ -34,7 +59,7 @@ class Compose:
 ## a. Random cropping
 class RandomCrop:
 
-    def __init__(self, crop_size = (128, 128)):
+    def __init__(self, crop_size):
         self.crop_size = crop_size
 
     def __call__(self, img):
@@ -108,7 +133,7 @@ class RandomTranslation:
 ## 2. Channel-wise Intensity Augmentation
 
 ## a. Guassian blur
-class ChannelWiseGuassianBlur:
+class ChannelWiseGaussianBlur:
 
     def __init__(self, kernal_size = 5, sigma = 1.0):
         self.kernal_size = kernal_size
@@ -124,7 +149,7 @@ class ChannelWiseGuassianBlur:
 
 
 ## b. Noise Injection
-class ChannelWiseGuassianNoise:
+class ChannelWiseGaussianNoise:
 
     def __init__(self, var = 0.01):
         self.var = var
