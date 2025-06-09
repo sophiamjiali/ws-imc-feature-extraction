@@ -32,8 +32,20 @@ class Compose:
 ## 1. Spatial Augmentation
 
 ## a. Random cropping
-class RandomCropping:
-    
+class RandomCrop:
+
+    def __init__(self, crop_size = (128, 128)):
+        self.crop_size = crop_size
+
+    def __call__(self, img):
+        C, H, W = img.shape
+        ch, cw = self.crop_size
+        if H == ch and W == cw:
+            return img
+        top = np.random.randint(0, H - ch + 1)
+        left = np.random.randint(0, W - cw + 1)
+        return img[:, top:top + ch, left:left + cw]
+
 
 ## b. Random flipping
 class RandomHorizontalFlip:
@@ -49,14 +61,49 @@ class RandomHorizontalFlip:
 class RandomVerticalFlip:
 
     def __init__(self, p = 0.5):
-        return
+        self.p = p
+
     def __call__(self, img):
-        return
+        if np.random.rand() < self.p:
+            return np.flip(img, axis = 1)
 
 
 ## c. Random rotation  
+class RandomRotation:
+
+    def __init__(self, p = 1.0):
+        self.p = p
+
+    def __call__(self, img):
+        if np.random.rand() < self.p:
+            angle = np.random.randint(0, 4)
+            return np.rot90(img, angle, axes = (1, 2))
+        return img
 
 ## d. Random translation
+class RandomTranslation:
+
+    def __init__(self, max_shift = 20, p = 0.5):
+        self.max_shift = max_shift
+        self.p = p
+    
+    def __call__(self, img):
+        if np.random.rand() < self.p:
+            shift_x = np.random.randint(-self.max_shift, self.max_shift + 1)
+            shift_y = np.random.randint(-self.max_shift, self.max_shift + 1)
+            img = np.roll(img, shift_x, axis = 2)
+            img = np.roll(img, shift_y, axis = 1)
+
+            # pad empty space with zeroes
+            if shift_x > 0:
+                img[:, :, :shift_x] = 0
+            elif shift_x < 0:
+                img[:, :, shift_x:] = 0
+            if shift_y > 0:
+                img[:, :shift_y, :] = 0
+            elif shift_y < 0:
+                img[:, shift_y:, :] = 0
+        return img
 
 ## 2. Channel-wise Intensity Augmentation
 
@@ -76,7 +123,6 @@ class ChannelWiseGuassianBlur:
         return blurred
 
 
-
 ## b. Noise Injection
 class ChannelWiseGuassianNoise:
 
@@ -91,34 +137,19 @@ class ChannelWiseGuassianNoise:
                                           var = self.var)
         return noisy
 
+
 ## c. Intensity Scaling
+class ChannelWiseIntensityScaling:
 
-## 3. Realistic Artifact Augmentation
-
-## a. Defocus
-
-## b. Over-saturation
-
-
-
-
-
-hmi_transforms = transforms.Compose([
-    # Augments WS-IMC patches for SimCLR
-
-    # Random cropping
-    transforms.RandomResizedCrop(size = 224, scale = (0.2, 1.0)),
-
-    # Random flipping
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
-
-    # Guassian blur
-
-
-    # guassian blur (kernal size = 5, sigma = 1.0) per channel
-    # scaling: enlarged image by factor of 2.0, then chose central crop
-
-    transforms.ToTensor()
-]) 
+    def __init__(self, scale_range = (0.8, 1.2), p = 0.5):
+        self.scale_range = scale_range
+        self.p  = p
+    
+    def __call__(self, img):
+        if np.random.rand() < self.p:
+            scales = np.random.uniform(self.scale_range[0], 
+                                       self.scale_range[1], 
+                                       size = (img.shape[0], 1, 1))
+            img = img * scales
+        return img
  

@@ -17,6 +17,7 @@ Reminders:
     - augmentations.py (crop size)
 - important: a paper chose only one augmentation method: random cropping
 - need to tune the strength of the Guassian blur
+    - realistic blur performed better (?)
 
 
 

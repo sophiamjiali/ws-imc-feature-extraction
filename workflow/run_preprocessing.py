@@ -10,7 +10,7 @@ PyTorch Version: 2.7.1
 
 # == Imports ==========================================================
 
-
+from augmentations import Compose
 
 # == Preprocess Data ==================================================
 
@@ -23,11 +23,16 @@ PyTorch Version: 2.7.1
 ## 4. Extract patches using a sliding window approach
 
 ## 5. Augment the patches for SimCLR
-pipeline = Compose([
-    RandomHorizontalFlip(),
-    ...
-])
-aug_img = pipeline(img)
+data_transforms = {
+    'train': Compose([
+        RandomHorizontalFlip(),
+        ...
+    ]),
+    'evaluate': Compose([
+
+    ])
+}
+
 
 ## 6. Create batches of augmented patches
 

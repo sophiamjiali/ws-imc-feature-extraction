@@ -1,0 +1,73 @@
+imctools: IMC file conversion tool to convert raw data MCD files into TIFF files
+    https://bodenmillergroup.github.io/imctools/
+
+tifffile: Conversion tool for NumPy arrays and TIFF files
+    https://pypi.org/project/tifffile/
+
+
+Model notes:
+    - train a model based on ResNet backbone
+    - use SimCLR contrastive learning framework
+    - use sliding window approach to extract patches from whole-slide images
+    - fine-tune on 1% of the labels to improve performance
+
+    - use PyTorch first to learn, then adapt to PyTorch Lightning
+
+
+
+
+Pre-Acquisition:
+    - spillover correction already performed
+    - blank acquisition already removed
+
+Pre-processing:
+    - initialize pixel-level mask for each channel
+    - extract pixel-level intensities from each pixel per channel
+    - normalize each channel individually via winsorization and min-max scaling
+    - initialize an AnnData object
+        - basic preprocessing: quality control, filtering, ...
+
+CNN Training:
+    - preprocess images, then extract patches via sliding window
+    - train CNN on patches
+        - use pre-trained model as backbone: ResNet
+            - ResNet: commonly used for IMC, easier to modify
+            - EfficientNet: better performance, but more complex
+            - consider transformer-based models later?
+        - use contrastive learning framework: SimCLR
+            - SimCLR: simple and effective, but resource-intensive
+            - MoCo: memory-efficient, but more complex
+    - fine-tune on 1% of the labels (improves performance significantly))
+    
+Post-processing:
+    - extract features from the trained CNN
+    - apply clustering algorithms to the feature maps
+        - e.g., K-means, DBSCAN, etc.
+
+
+
+Whole-slide IMC Pipeline:
+    - image acquisition, spillover correction already performed
+    - normalization: normalize to zero to one, not archsinh
+    - basic feature extraction: extract marker intensities from each pixel
+        - calculate correlations across whole slide, compare to TMA-IMC
+        - extract marker intensities from each pixel for whole slide
+    - sliding window: train CNN for feature extraction in each window
+    - cluster windows as unit of analysis
+    - find centroid of each cluster, then compare to TMA-IMC
+
+    Notes:
+        - find a way to convert into annData, then use scanpy for processing
+
+TMA-IMC Pipeline:
+    1. image aqcuisition
+    2. spillover correction: marker showing up in multiple channels
+        - pretty linear; given spillover matrix (use catalyst package)
+    3. segmentation: identify cells in the image
+    4. normalize: arcsinh, winsorization
+    4. feature extraction: extract marker intensities from each cell
+        - per cell marker intensities
+    5. clustering: cluster cells based on marker intensities
+
+- adapting CNN to IMC, usually takes three channels
+    - pytorch/pytorch-lightning: see documentation
