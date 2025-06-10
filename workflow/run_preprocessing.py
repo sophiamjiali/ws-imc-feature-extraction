@@ -14,20 +14,21 @@ import yaml
 import argparse
 import os
 
-from src.preprocess import mcd_to_tiff, load_image
-from simclr.augmentations import Compose, build_augmentation_pipeline, RandomCrop, RandomHorizontalFlip, RandomVerticalFlip, RandomRotation, RandomTranslation, ChannelWiseGaussianBlur, ChannelWiseGaussianNoise, ChannelWiseIntensityScaling
+from src.preprocess import mcd_to_tiff, load_image, denoise, remove_background, normalize, save_image
+from simclr.augmentations import build_augmentation_pipeline
 
 # == Preprocess Data ==================================================
 
 def main(config):
 
     ##  Convert all raw IMC MCD files to TIFF files
+    pre_cfg = config.get('preprocessing', {})
+
     mcd_dir = config['directories'].get('mcd_dir', '')
     tiff_dir = config['directories'].get('tiff_dir', '')
-    mcd_to_tiff(mcd_dir, tiff_dir)
+    processed_dir = config['directories'].get('processed_dir', '')
 
-    ## Initialize the augmentation pipeline as specified by the configurations
-    data_transforms = build_augmentation_pipeline(config['augmentation'])
+    mcd_to_tiff(mcd_dir, tiff_dir)
 
     ## Preprocess each TIFF file
     for file_name in os.listdir(tiff_dir):
@@ -38,18 +39,33 @@ def main(config):
             img = load_image(file_path)
 
             # B. Preprocess the data
-            img = denoise(img, config['preprocessing']['denoise'])
+            #   Spillover: not implemented yet, might not have an impact
+            #   Batch Correction: add as co-variable (?)
+            #   Denoise: already implemented, might not have an impact
+            img = remove_background(img, pre_cfg.get('background_threshold', 0))
+            img = normalize(img, pre_cfg.get('normalize', {}))
 
-            # C. Extract patches using a sliding window approach
+            # C. Save the preprocessed data
+            save_image(img, file_name, processed_dir)
 
-            # D. Augment the patches for SimCLR
-            for patch in x:
-                
-                view1 = data_transforms(patch)
-                view2 = data_transforms(patch)
+
+
+
+
+
+   
+
+    # C. Extract patches using a sliding window approach
+
+    # D. Augment the patches for SimCLR
+    for patch in x:
+        
+        view1 = data_transforms(patch)
+        view2 = data_transforms(patch)
 
     # E. Create batches of augmented patches (pooled across all IMC images)
-
+    # turn into dataset object (MyDataset(data, labels))
+    # then make batches (dataloader = DataLoader(dataset, batch_size = 16, shuffle = True)I s)
 
     # ... haven't verified below yet
 

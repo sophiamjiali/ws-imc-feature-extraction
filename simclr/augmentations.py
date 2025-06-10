@@ -130,7 +130,7 @@ class RandomTranslation:
                 img[:, shift_y:, :] = 0
         return img
 
-## 2. Channel-wise Intensity Augmentation
+## 2. Channel-wise IntenHowsity Augmentation
 
 ## a. Guassian blur
 class ChannelWiseGaussianBlur:

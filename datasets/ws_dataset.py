@@ -1,0 +1,28 @@
+"""
+Script:          ws_dataset.py
+Purpose:         Defines the dataset class for WS-IMC images
+Author:          Sophia Li
+Affiliation:     Campbell Lab
+Date:            06-10-2025
+
+PyTorch Version: 2.7.1
+"""
+
+# == Imports ==========================================================
+
+import torch
+from torch.utils.data import Dataset
+
+
+
+# == Class Definitions ================================================
+
+ ## Initialize the augmentation pipeline as specified by the configurations
+    data_transforms = build_augmentation_pipeline(config.get['augmentation'])
+
+class WSDataset(Dataset):
+
+    # def __init__(self, processed_dir, ...)
+        
+
+

@@ -1,20 +1,24 @@
-# == Directory Paths =============================================
+# == General =============================================
 directories:
   mcd_dir: /data/raw
   tiff_dir: /data/processed
+  processed_dir: /data/processed
+
+  # how to separate tiff and preprocessed?
+
+panel:
+  background_stains: ....test....
 
 # == Preprocessing ===============================================
 preprocessing:
-  denoise:
-    median_filter:
+  denoise_size: (1, 3, 3)
+  background_threshold: 5
+  normalize:
+    winsorization:
       enabled: true
-      size: (1, 3, 3)
-    gaussian_blur:
-      enabled: true
-      k_size: 3
-      sigma: 1
+      quantile: 0.01
+    min_max_scale: true
   patch_size: 200
-  normalization: minmax
 
 augmentation:
   random_cropping:
@@ -33,18 +37,18 @@ augmentation:
   
   # == Architecture ===============================================
 
-  model:
-    backbone: resnet18
-    pretrained: false
-    SimCLR:
-      temperature: 0.5
-      project_dim: 128
-      batch_size: 64
-      epochs: 100
-      optimizer: adam
-      learning_rate: 0.001
+model:
+  backbone: resnet18
+  pretrained: false
+  SimCLR:
+    temperature: 0.5
+    project_dim: 128
+    batch_size: 64
+    epochs: 100
+    optimizer: adam
+    learning_rate: 0.001
 
-  training:
-    device: cuda
-    num_workers: 4
-    seed: 42
+training:
+  device: cuda
+  num_workers: 4
+  seed: 42
