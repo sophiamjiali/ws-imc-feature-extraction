@@ -15,13 +15,17 @@ import argparse
 import os
 
 from src.preprocess import mcd_to_tiff, load_image, denoise, remove_background, normalize, save_image
-from simclr.augmentations import build_augmentation_pipeline
+from utils.config_utils import parse_args, load_config
 
 # == Preprocess Data ==================================================
 
 def main(config):
 
-    ##  Convert all raw IMC MCD files to TIFF files
+    ## Parse and load the configuration file provided
+    args = parse_args()
+    config = load_config(args.config)
+
+    ## Convert all raw IMC MCD files to TIFF files
     pre_cfg = config.get('preprocessing', {})
 
     mcd_dir = config['directories'].get('mcd_dir', '')
@@ -74,14 +78,4 @@ def main(config):
     # Create batches
 
 if __name__ == "__main__":
-
-    # parse the configuration file
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type = str, required = True,
-                         help = 'Path to YAML config file')
-    args = parser.parse_args()
-
-    with open(args.config, 'r') as f:
-        config = yaml.safe_load(f)
-
-    main(config)
+    main()

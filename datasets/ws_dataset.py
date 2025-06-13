@@ -17,12 +17,16 @@ from torch.utils.data import Dataset
 
 # == Class Definitions ================================================
 
- ## Initialize the augmentation pipeline as specified by the configurations
-    data_transforms = build_augmentation_pipeline(config.get['augmentation'])
+
 
 class WSDataset(Dataset):
 
-    # def __init__(self, processed_dir, ...)
+    def __init__(self, image_dir, patch_size = (200, 200), transforms = None):
+        self.image_dir = image_dir
+        self.patch_size = patch_size
+        self.transforms = transforms
+    
+    def __len__(self):
         
 
 

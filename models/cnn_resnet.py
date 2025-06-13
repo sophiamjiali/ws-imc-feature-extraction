@@ -1,5 +1,5 @@
 """
-Script:          resnet_backbone.py
+Script:          cnn_resnet.py
 Purpose:         Sets up the ResNet backbone for the CNN model
 Author:          Sophia Li
 Affiliation:     Campbell Lab
@@ -16,8 +16,17 @@ import torchvision.models as models
 
 # == ResNet Backbone Class ============================================
 
+
+
+        # UNFINISHED!
+
+
+
+        
+
+
 class ResNetBackbone(nn.Module):
-    # Initializes a non-pretrained ResNet-18 backbone
+    # Initializes a non-pretrained ResNet-18 backbone for feature extraction
 
     def __init__(self, 
                  base_model: str = 'resnet18', 
