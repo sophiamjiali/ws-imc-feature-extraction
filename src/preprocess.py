@@ -12,52 +12,16 @@ PyTorch Version: 2.7.1
 
 import tifffile as tf
 import numpy as np
-import pandas as pd
-import scanpy as sc
-import os
-import cv2
 
-from skimage.util import view_as_windows
 from scipy.stats.mstats import winsorize
 from scipy.ndimage import median_filter
 from sklearn.preprocessing import MinMaxScaler
-
-from readimc import MCDFile
 
 # == Preprocessing Functions ===========================================
 
 ## 1. Image Conversion: convert raw MCD files to OME-TIFF files and NumPy arrays
 
-def mcd_to_tiff(mcd_dir, tiff_dir):
-    # Converts all MCD files in the provided directory to TIFF files
 
-    for file in os.listdir(mcd_dir):
-
-        mcd_file = os.path.join(mcd_dir, file)
-        name = [file.split(' ')[-1].split('.')[0] if file.startswith('2024') else file.split('.')][0]
-
-        with MCDFile(mcd_file) as mcd_read:
-
-            for slide in mcd_read.slides:
-                for acquisition in slide.acquisitions:
-
-                    try:
-                        img = mcd_read.read_acquisition(acquisition)
-                        file_name = name + f"_{acquisition.description}.tiff"
-                        tf.imwrite(os.path.join(tiff_dir, file_name), img)
-                    except:
-                        print(f"Error processing {file} - acquisition {acquisition.description}")
-
-def load_image(tiff_path):
-    # Loads a TIFF file as a NumPy array
-
-    try:
-        img = tf.imread(tiff_path)
-    except Exception as e:
-        file_name = os.path.basename(tiff_path)
-        print(f"Error loading image {file_name}: {e}")
-        return None
-    return img
 
 ## 2. Remove Background Stains
 
@@ -141,8 +105,3 @@ def create_tissue_mask(img):
 
 ## 7. Save Preprocessed Image
 
-def save_image(img, file_name, processed_dir):
-    # Saves the preprocessed image to disk
-    img = np.moveaxis(img, 0, -1)
-    tifffile.imwrite()
-    

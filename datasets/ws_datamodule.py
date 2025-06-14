@@ -1,6 +1,6 @@
 """
 Script:          ws_datamodule.py
-Purpose:         Defines the LightningDataModule for WS data
+Purpose:         Defines the DataModule object for PyTorch Lightning
 Author:          Sophia Li
 Affiliation:     Campbell Lab
 Date:            06-10-2025

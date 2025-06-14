@@ -1,5 +1,5 @@
 """
-Script:          cae.py
+Script:          cae_resnet.py
 Purpose:         Sets up the Convolutional Autoencoder with a ResNet encoder
 Author:          Sophia Li
 Affiliation:     Campbell Lab
@@ -21,9 +21,9 @@ class Autoencoder(nn.Module):
         self.decoder = decoder
     
     def forward(self, x):
-        z = self.encoder(x)
-        out = self.decoder(z)
-        return out
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x
 
 
 class ResNetEncoder(nn.Module):
@@ -56,9 +56,6 @@ class ResNetEncoder(nn.Module):
         # Remove the fully connected layer and avgpool
         self.features = nn.Sequential(*list(resnet.children())[:-2])
 
-        # Modify the output channel
-        self.out_channels = (512 if base_model in ['resnet18', 'resnet34'] else 2048)
-
     def forward(self, x):
         return self.features(x)
     
@@ -66,18 +63,20 @@ class ResNetEncoder(nn.Module):
 class Decoder(nn.Module):
     # Initializes a custom decoder
 
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels = 512, out_channels = 52):
         
         super().__init__()
 
         self.decoder = nn.sequential(
-            nn.ConvTranspose2d(in_channels, 256, kernel_size = 3, stride = 2, padding = 1, output_padding = 1),
+            nn.ConvTranspose2d(in_channels, 256, 3, 2, 1, 1),
             nn.ReLU(),
-            nn.ConvTranspose2d(256, 128, kernel_size = 3, stride = 2, padding = 1, output_padding = 1),
+            nn.ConvTranspose2d(256, 128, 3, 2, 1, 1),
             nn.ReLU(),
-            nn.ConvTranspose2d(128, 64, kernel_size = 3, stride = 2, padding = 1, output_padding = 1),
+            nn.ConvTranspose2d(128, 64, 3, 2, 1, 1),
             nn.ReLU(),
-            nn.ConvTranspose2d(64, out_channels, kernel_size = 3, stride = 2, padding = 1, output_padding = 1),
+            nn.ConvTranspose2d(64, 32, 3, 2, 1, 1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, out_channels, 3, 2, 1, 1),
             nn.Sigmoid()
         )
 

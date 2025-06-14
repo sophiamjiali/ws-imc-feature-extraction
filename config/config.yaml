@@ -19,6 +19,7 @@ preprocessing:
       quantile: 0.01
     min_max_scale: true
   patch_size: 200
+  stride: 200
 
 augmentation:
   random_cropping:
