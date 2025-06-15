@@ -12,7 +12,7 @@ import torch.nn as nn
 from torchvision import models
 
 
-class Autoencoder(nn.Module):
+class ConvAutoencoder(nn.Module):
     # Initializes an autoencoder using a ResNet encoder
 
     def __init__(self, encoder, decoder):
@@ -29,10 +29,11 @@ class Autoencoder(nn.Module):
 class ResNetEncoder(nn.Module):
     # Initializes a non-pretrained ResNet-18 encoder
     
-    def __init__(self,
-                 base_model = 'resnet18',
-                 in_channels = 3,
-                 pretrained = False):
+    def __init__(
+            self,
+            base_model = 'resnet18',
+            in_channels = 52,
+            pretrained = False):
         
         # Initializes a pre-built ResNet model
         super().__init__()
@@ -57,7 +58,7 @@ class ResNetEncoder(nn.Module):
         self.features = nn.Sequential(*list(resnet.children())[:-2])
 
     def forward(self, x):
-        return self.features(x)
+        return self.model(x)
     
 
 class Decoder(nn.Module):
@@ -67,7 +68,7 @@ class Decoder(nn.Module):
         
         super().__init__()
 
-        self.decoder = nn.sequential(
+        self.model = nn.sequential(
             nn.ConvTranspose2d(in_channels, 256, 3, 2, 1, 1),
             nn.ReLU(),
             nn.ConvTranspose2d(256, 128, 3, 2, 1, 1),
@@ -81,4 +82,4 @@ class Decoder(nn.Module):
         )
 
     def forward(self, x):
-        return self.decoder(x)
+        return self.model(x)

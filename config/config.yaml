@@ -3,6 +3,9 @@ directories:
   mcd_dir: /data/raw
   tiff_dir: /data/processed
   processed_dir: /data/processed
+  logs:
+    tensorboard: /results/logs/tensorboard
+    csv: /results/logs/csv
 
   # how to separate tiff and preprocessed?
 
@@ -39,17 +42,12 @@ augmentation:
   # == Architecture ===============================================
 
 model:
-  backbone: resnet18
-  pretrained: false
-  SimCLR:
-    temperature: 0.5
-    project_dim: 128
-    batch_size: 64
-    epochs: 100
-    optimizer: adam
-    learning_rate: 0.001
+  name: cae_resnet
 
 training:
+  epochs: 100
+  learning_rate: 0.001
+  batch_size: 32
   device: cuda
   num_workers: 4
   seed: 42

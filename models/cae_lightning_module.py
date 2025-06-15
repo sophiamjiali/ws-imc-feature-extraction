@@ -10,42 +10,61 @@ PyTorch Version: 2.7.1
 
 import lightning as L
 import torch
-import torch.nn as nn
-from torchvision import models
+import torch.nn.functional as F
 
 
 class CAELightningModule(L.LightningModule):
 
-    def __init__(self, model):
+    def __init__(self, autoencoder, lr = 1e-3):
         super().__init__()
-        self.model = model
-        self.save_hyperparameters()
+        self.autoencoder = autoencoder
+        self.save_hyperparameters(ignore = ['autoencoder'])
+        self.lr = lr
 
     def forward(self, x):
-        return self.model(x)
+        return self.autoencoder(x)
+    
+    def _get_reconstruction_loss(self, batch):
+        input, target = batch
+        output = self(input)
+        loss = F.mse_loss(output, target)
+        return loss
 
     def training_step(self, batch, batch_idx):
-
-        # from PyTorch wiki
-
-        inputs, target = batch
-        output = self.model(inputs, target)
-        loss = torch.nn.functional.nll_loss(output, target.view(-1))
-        self.log("train_loss", loss, on_step = True, on_epoch = True, prog_bar = True, logger = True)
+        loss = self._get_reconstruction_loss(batch)
+        self.log('train_loss', loss, on_step = False, on_epoch = True, prog_bar = True, logger = True)
         return loss
     
     def validation_step(self, batch, batch_idx):
-        inputs, target = batch
-        output = self.model(inputs, target)
-        loss = F.cross_entropy(y_hat, y)
-        self.log("val_loss", loss)
+        loss = self._get_reconstruction_loss(batch)
+        self.log("val_loss", loss, on_step = False, on_epoch = True, prog_bar = True, logger = True)
+        return loss
     
     def test_step(self, batch, batch_idx):
-        return
+        loss = self._get_reconstruction_loss(batch)
+        self.log("test_loss", loss, on_step = False, on_epoch = True, prog_bar = True, logger = True)
+        return loss
 
     def predict_step(self, batch, batch_idx):
-        return
+        # Return the encoder features
+        input, _ = batch
+        return self.autoencoder.encoder(input)
     
-    def configure_optimizers():
-        return torch.optim.SGD(self.model.parameters(),lr = 0.1)
-        
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), self.lr)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, 
+            mode = "min", 
+            factor = 0.1,
+            patience = 7,
+            threshold = 0.0001,
+            cooldown = 2,
+            min_lr = 1e-6
+        )
+        return {
+            "optimizer": optimizer, 
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "val_loss"
+            }
+        }
