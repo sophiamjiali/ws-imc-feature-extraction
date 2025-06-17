@@ -16,13 +16,20 @@ from scipy.stats.mstats import winsorize
 from scipy.ndimage import median_filter
 from sklearn.preprocessing import MinMaxScaler
 
+from utils.config_utils import load_image
+
 # == Preprocessing Functions ===========================================
-
-## 1. Image Conversion: convert raw MCD files to OME-TIFF files and NumPy arrays
-
 
 
 ## 2. Remove Background Stains
+
+def remove_background_stains(img, panel, markers):
+    # Removes background stains by omittance in markers
+    background_idx = [idx for idx, marker in enumerate(markers) if marker not in panel]
+
+    for idx in sorted(background_idx, reverse = True):
+        img = np.delete(img, idx, axis = 0)
+    return img
 
     # load marker panel
     # remove the associated channels
@@ -89,31 +96,32 @@ def batch_effects():
 
 ## 6. Patch Extraction: divide whole-slide images via sliding window approach
 
+def extract_patch(img, 
+                  patch_size = (200, 200), 
+                  coords = (0, 0),
+                  img_shape = (1000, 1000)):
+    # Extracts a patch starting at (X,Y), padding if necessary
+    
+    y_end = min(coords[0] + patch_size[0], img_shape[0])
+    x_end = min(coords[1] + patch_size[1], img_shape[0])
+    
+    patch = img[:, coords[0]:y_end, coords[1]:x_end]
+
+    pad_h = patch_size[0] - (y_end - coords[0])
+    pad_w = patch_size[1] - (x_end - coords[1])
+
+    if pad_h > 0 or pad_w > 0:
+        patch = np.pad(
+            patch,
+            ((0, 0, 0), (0, pad_h), (0, pad_w)),
+            mode = "constant"
+        )
+
+    return patch
 
 
-        # change it so I initialize/save the tissue mask, then do it on the fly in the Dataset class (see both functions below)
-
-
-
-def extract_patches(img, patch_size = (200, 200)):
-    # Extracts patches with sufficient biological content via sliding window
-
-    # Create a binary tissue mask to separate background from tissue
-    tissue_mask = create_tissue_mask(img)
-
-
-    return
-
-def create_tissue_mask(img):
-    # Creates a binary tissue mask to separate background from foreground
-    channel_sums = img.sum(axis = 0)
+def has_sufficient_content(patch, threshold):
+    # Returns true if the patch contains at least the threshold percentage
+    channel_sums = patch.sum(axis = 0)
     bool_mask = channel_sums > 0
-    return np.where(bool_mask, 1, 0)
-
-
-
-
-
-
-## 7. Save Preprocessed Image
-
+    return np.mean(bool_mask) > threshold

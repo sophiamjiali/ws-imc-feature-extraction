@@ -12,8 +12,8 @@ import random
 import argparse
 import yaml
 import os
-import numpy as np
-import tifffile as tf
+import re
+
 
 from readimc import MCDFile
 from datasets.ws_dataset import WSDataset
@@ -62,38 +62,45 @@ def build_datasets(image_paths = '', patch_size = (200,200), transforms = None):
     return train_dataset, val_dataset, test_dataset
 
 
-def mcd_to_tiff(mcd_dir, tiff_dir):
-    # Converts all MCD files in the provided directory to TIFF files
-
-    for file in os.listdir(mcd_dir):
-
-        mcd_file = os.path.join(mcd_dir, file)
-        name = file.split('.')[0]
-
-        with MCDFile(mcd_file) as mcd_read:
-            try:
-                img = mcd_read.read_acquisition(mcd_read.slides[0].acquisitions[0])
-                file_name = name + ".tiff"
-                tf.imwrite(os.path.join(tiff_dir, file_name), img)
-            except:
-                print(f"Error processing file")
-
-
-def load_image(tiff_path):
-    # Loads a TIFF file as a NumPy array
-
+def load_image(mcd_path):
+    # Loads an MCD file as a NumPy array
     try:
-        img = tf.imread(tiff_path)
+        with MCDFile(mcd_path) as f:
+            img = f.read_acquisition(f.slides[0].acquisitions[0])
     except Exception as e:
-        file_name = os.path.basename(tiff_path)
-        print(f"Error loading image {file_name}: {e}")
-        return None
+        print(f"Error processing file: {mcd_path} - {e}")
     return img
-
-
-def save_image(img, file_name, processed_dir):
-    # Saves the preprocessed image to disk
-    img = np.moveaxis(img, 0, -1)
-    path = os.path.join(processed_dir, file_name)
-    tf.imwrite(path, img)
     
+
+def load_image_and_markers(mcd_path):
+    # Loads both the MCD File and the marker labels
+    try:
+        with MCDFile(mcd_path) as f:
+            acq = f.slides[0].acquisitions[0]
+            img = f.read_acquisition(acq)
+            channel_names = acq.channel_names
+    except Exception as e:
+        print(f"Error processing file: {mcd_path} - {e}")
+
+    return img, channel_names
+
+def load_panel(panel_path):
+    # Loads the protein marker panel as a list
+
+    markers = []
+    with open(panel_path, newline = '') as csvfile:
+        next(csvfile) # Skip the first line
+
+        for row in csvfile:
+            values = [v.strip() for v in row.strip().split(',')]
+            if all(v == '' for v in values): 
+                continue
+            curr_marker = values[1]
+
+            # Format the metal label to align with MCD metadata
+            curr_marker = curr_marker.replace(' ', '')
+            letters = ''.join(re.findall(r'[A-Za-z]', curr_marker))
+            numbers = ''.join(re.findall(r'\d', curr_marker))
+            
+            markers.append(f"{letters}{numbers}")
+    return markers

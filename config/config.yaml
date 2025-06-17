@@ -6,11 +6,9 @@ directories:
   logs:
     tensorboard: /results/logs/tensorboard
     csv: /results/logs/csv
+  panel: /...
 
-  # how to separate tiff and preprocessed?
-
-panel:
-  background_stains: ....test....
+  
 
 # == Preprocessing ===============================================
 preprocessing:
@@ -23,20 +21,21 @@ preprocessing:
     min_max_scale: true
   patch_size: 200
   stride: 200
+  bio_content_threshold: 0.10
 
 augmentation:
   random_cropping:
-    enabled: true
+    enabled: false
     crop_size: 128
-  random_flip: true
-  random_rotation: true
+  random_flip: false
+  random_rotation: false
   random_translation: 
-    enabled: true
+    enabled: false
     max_shift: 20
-  gaussian_blur: true
-  gaussian_noise: true
+  gaussian_blur: false
+  gaussian_noise: false
   intensity_scaling:
-    enabled: true
+    enabled: false
     scale_range: (0.8, 1.2)
   
   # == Architecture ===============================================
@@ -47,7 +46,7 @@ model:
 training:
   epochs: 100
   learning_rate: 0.001
-  batch_size: 32
+  batch_size: 22
   device: cuda
   num_workers: 4
   seed: 42
