@@ -8,7 +8,7 @@ Date:            06-15-2025
 PyTorch Version: 2.7.1
 """
 
-from lightning.pytorch.loggers import TensorBoardLogger, CSVLogger
+from lightning.pytorch.loggers import TensorBoardLogger, CSVLogger, WandbLogger
 
 
 def get_loggers(log_dir, name):
@@ -23,6 +23,9 @@ def get_loggers(log_dir, name):
             save_dir = log_dir.get('csv', ''),
             name = name
         ),
+        WandbLogger(
+            log_model = "all"
+        )
 
         # add weights and bias logger
     ]

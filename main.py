@@ -65,18 +65,16 @@ def main():
         num_workers = train_cfg.get('num_workers')
     )
 
+    #latent_dimensions = [64, 128, 256, 384]
+    latent_dimensions = 64
 
-    # no loop just try one first (64)
-
-    for latent_dim in [64, 128, 256, 384]:
+    for latent_dim in latent_dimensions:
         model, result = train_cae(
             latent_dim = latent_dim,
-            datamodule = datamodule
+            datamodule = datamodule,
             max_epochs = train_cfg.get('epochs'),
-            data_transorms = data_transforms
             loggers = loggers,
             callbacks = callbacks
-            
         )
 
 

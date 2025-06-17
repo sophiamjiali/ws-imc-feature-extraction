@@ -11,6 +11,8 @@ PyTorch Version: 2.7.1
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor
 from pytorch_lightning import Callback
 
+# Removed EarlyStopping for now, just want to run vanilla
+
 def get_callbacks():
     # Wrapper for fetching all defined callbacks
     return [
@@ -19,20 +21,16 @@ def get_callbacks():
             save_top_k = 1,
             mode = "min"
         ),
-        EarlyStopping(
-            monitor = "val_loss",
-            patience = 10,
-            mode = "min"
-        ),
         LearningRateMonitor(
             logging_interval = "epoch"
-        )
+        ),
         PrintCallback()
     ]
 
 
 def get_checkpoint_callbacks(monitor = "val_loss", save_top_k = 1, mode ="min"):
-
+    # i honestly dont remember what this is for i hope its not important
+    return 
 
 
 class PrintCallback(Callback):

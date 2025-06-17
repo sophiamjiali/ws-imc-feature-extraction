@@ -9,12 +9,15 @@ PyTorch Version: 2.7.1
 """
 
 from pytorch_lightning import Trainer
-
 from models.cae_resnet import ConvAutoencoder, ResNetEncoder, Decoder
 
 
 def train_cae(
-        latent_dim
+        latent_dim = 64,
+        datamodule = None,
+        max_epochs = 100,
+        loggers = None,
+        callbacks = None
     ):
 
     ## Initialize the Trainer with the provided parameters 

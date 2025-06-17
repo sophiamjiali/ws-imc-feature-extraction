@@ -20,9 +20,7 @@ from utils.config_utils import load_image
 
 # == Preprocessing Functions ===========================================
 
-
 ## 2. Remove Background Stains
-
 def remove_background_stains(img, panel, markers):
     # Removes background stains by omittance in markers
     background_idx = [idx for idx, marker in enumerate(markers) if marker not in panel]
@@ -31,28 +29,26 @@ def remove_background_stains(img, panel, markers):
         img = np.delete(img, idx, axis = 0)
     return img
 
-    # load marker panel
-    # remove the associated channels
 
 ## 3. Spillover Correction
 
     # might not cause an issue, here as placeholder
 
-## 3. Denoising: remove hot pixels, shot noise, etc.
 
+## 3. Denoising: remove hot pixels, shot noise, etc.
 def denoise(img, size = (1, 3, 3)):
     # Applies a median filter to remove hot pixels
     return median_filter(img, size)
 
-## 4. Background Removal: remove non-tissue regions
 
+## 4. Background Removal: remove non-tissue regions
 def remove_background(img, threshold = 4):
     # Removes the background via intensity threshold across all channels
     img[img < threshold] = 0
     return img
 
-## 4. Normalization: channel-wise intensity normalization and scaling
 
+## 4. Normalization: channel-wise intensity normalization and scaling
 def normalize(img, normalize_cfg):
     # Normalizes and scales the image via winsorization and min-max scaling
     winsorize_cfg = normalize_cfg.get('winsorization', {})
@@ -85,8 +81,8 @@ def min_max_scale(img):
 
     return img_norm
 
-## 5. Quality Control: screen for batch effects
 
+## 5. Quality Control: screen for batch effects
 def batch_effects():
     return
     # add the batch as a co-variable
@@ -95,7 +91,6 @@ def batch_effects():
 
 
 ## 6. Patch Extraction: divide whole-slide images via sliding window approach
-
 def extract_patch(img, 
                   patch_size = (200, 200), 
                   coords = (0, 0),
@@ -119,7 +114,7 @@ def extract_patch(img,
 
     return patch
 
-
+## 7. Patch Quality Control: evaluate sufficiency of biological content
 def has_sufficient_content(patch, threshold):
     # Returns true if the patch contains at least the threshold percentage
     channel_sums = patch.sum(axis = 0)
