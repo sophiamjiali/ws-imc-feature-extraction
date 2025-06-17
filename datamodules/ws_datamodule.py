@@ -7,7 +7,7 @@ Date:            06-10-2025
 
 PyTorch Version: 2.7.1
 """
-import pytorch_lightning as pl
+from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
 class WSDataModule(LightningDataModule):

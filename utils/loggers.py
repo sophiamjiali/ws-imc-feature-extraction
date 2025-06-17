@@ -22,6 +22,8 @@ def get_loggers(log_dir, name):
         CSVLogger(
             save_dir = log_dir.get('csv', ''),
             name = name
-        )
+        ),
+
+        # add weights and bias logger
     ]
 

@@ -10,7 +10,6 @@ PyTorch Version: 2.7.1
 
 # == Imports ==========================================================
 
-import tifffile as tf
 import numpy as np
 
 from scipy.stats.mstats import winsorize
@@ -41,7 +40,7 @@ def denoise(img, size = (1, 3, 3)):
 ## 4. Background Removal: remove non-tissue regions
 
 def remove_background(img, threshold = 4):
-    # Removes the background per channel via intensity threshold
+    # Removes the background via intensity threshold across all channels
     img[img < threshold] = 0
     return img
 
@@ -55,16 +54,29 @@ def normalize(img, normalize_cfg):
         img = winsorize_intensity(img, winsorize_cfg.get('quantile', 0.0))
     if normalize_cfg.get('min_max_scale', True):
         img = min_max_scale(img)
-    return
+    return img
 
 def winsorize_intensity(img, quantile = 0.01):
-    # Winsorizes the top and bottom quantile specified
-    return winsorize(img, [quantile, quantile])
+    # Winsorizes the top and bottom quantile specified per channel
+    channels = img.shape[0]
+    img_wins = np.zeros_like(img, dtype = np.float32)
+
+    for c in range(channels):
+        img_wins[c] = winsorize(img[c], limits = [quantile, quantile])
+
+    return img_wins
 
 def min_max_scale(img):
-    # Scales the pixel intensities to [0, 1]
-    scaler = MinMaxScaler()
-    return scaler.fit_transform(img)
+    # Scales the pixel intensities to [0, 1] per channel
+    channels = img.shape[0]
+    img_norm = np.zeros_like(img, dtype = np.float32)
+
+    for c in range(channels):
+        scaler = MinMaxScaler()
+        channel_data = img[c]
+        img_norm[c] = scaler.fit_transform(channel_data)
+
+    return img_norm
 
 ## 5. Quality Control: screen for batch effects
 

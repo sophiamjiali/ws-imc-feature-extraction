@@ -68,19 +68,15 @@ def mcd_to_tiff(mcd_dir, tiff_dir):
     for file in os.listdir(mcd_dir):
 
         mcd_file = os.path.join(mcd_dir, file)
-        name = [file.split(' ')[-1].split('.')[0] if file.startswith('2024') else file.split('.')][0]
+        name = file.split('.')[0]
 
         with MCDFile(mcd_file) as mcd_read:
-
-            for slide in mcd_read.slides:
-                for acquisition in slide.acquisitions:
-
-                    try:
-                        img = mcd_read.read_acquisition(acquisition)
-                        file_name = name + f"_{acquisition.description}.tiff"
-                        tf.imwrite(os.path.join(tiff_dir, file_name), img)
-                    except:
-                        print(f"Error processing {file} - acquisition {acquisition.description}")
+            try:
+                img = mcd_read.read_acquisition(mcd_read.slides[0].acquisitions[0])
+                file_name = name + ".tiff"
+                tf.imwrite(os.path.join(tiff_dir, file_name), img)
+            except:
+                print(f"Error processing file")
 
 
 def load_image(tiff_path):
@@ -98,5 +94,6 @@ def load_image(tiff_path):
 def save_image(img, file_name, processed_dir):
     # Saves the preprocessed image to disk
     img = np.moveaxis(img, 0, -1)
-    tf.imwrite()
+    path = os.path.join(processed_dir, file_name)
+    tf.imwrite(path, img)
     

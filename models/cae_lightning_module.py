@@ -52,19 +52,3 @@ class CAELightningModule(L.LightningModule):
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), self.lr)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, 
-            mode = "min", 
-            factor = 0.1,
-            patience = 7,
-            threshold = 0.0001,
-            cooldown = 2,
-            min_lr = 1e-6
-        )
-        return {
-            "optimizer": optimizer, 
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "monitor": "val_loss"
-            }
-        }

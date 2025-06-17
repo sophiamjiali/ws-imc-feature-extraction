@@ -62,6 +62,8 @@ def main():
     )
 
 
+    # no loop just try one first (64)
+
     for latent_dim in [64, 128, 256, 384]:
         model, result = train_cae(
             latent_dim = latent_dim,
@@ -69,7 +71,7 @@ def main():
             max_epochs = train_cfg.get('epochs'),
             data_transorms = data_transforms
             loggers = loggers,
-            callbacks = callbacks,
+            callbacks = callbacks
             
         )
 
