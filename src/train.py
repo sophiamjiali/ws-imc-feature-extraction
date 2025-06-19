@@ -10,6 +10,7 @@ PyTorch Version: 2.7.1
 
 from pytorch_lightning import Trainer
 from models.cae_resnet import ConvAutoencoder, ResNetEncoder, Decoder
+from models.cae_lightning_module import CAELightningModule
 
 
 def train_cae(
@@ -22,36 +23,30 @@ def train_cae(
 
     ## Initialize the Trainer with the provided parameters 
     trainer = Trainer(
-        devices = 2,
+        devices = 1,
         accelerator = "gpu",
         strategy = "ddp",
         benchmark = True,        # Fixed input size, speeds up training
-        callbacks = PrintCallback()
+        logger = loggers,
+        callbacks = callbacks,
+        log_every_n_steps = 10
     )
 
-    
-    ## Estimate the initial learning rate
-    lr_finder = trainer.tuner.lr_find(model, datamodule)
-
-
-
-
-     # Initialize the Autoencoder model
+    ## Initialize the Autoencoder model with a default learning rate
     encoder = ResNetEncoder()
     decoder = Decoder()
     cae = ConvAutoencoder(encoder, decoder)
     model = CAELightningModule(cae)
 
-    # Initialize the trainer
-    trainer = Trainer(
-        max_epochs = 100,
-        accelerator = "gpu",
-        devices = 1,
-        log_every_n_steps = 10,
-        default_root_dir = "outputs"
-    )
+    ## Estimate the initial learning rate
+    lr_finder = trainer.tuner.lr_find(model, datamodule)
+    suggested_lr = lr_finder.suggestion()
 
+    ## Reinitialize the model with the suggested learning rate
+    model = CAELightningModule(cae, suggested_lr)
+
+    ## Fit the data
     trainer.fit(model, datamodule)
 
-
-
+    ## Evaluate the model and return the metrics
+    return model, trainer.test(model, datamodule)

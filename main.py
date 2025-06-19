@@ -10,10 +10,7 @@ PyTorch Version: 2.7.1
 
 
 from datamodules.ws_datamodule import WSDataModule
-from models.cae_lightning_module import CAELightningModule
 import pytorch_lightning as pl
-
-
 
 from src.train import train_cae
 from utils.loggers import get_loggers
@@ -77,20 +74,9 @@ def main():
             callbacks = callbacks
         )
 
-
-
-
-
-
-
-
+        # process the result, store the model if best (?)
 
     
-
-   
-
-    # Evaluate the model
-    trainer.test(model, datamodule = datamodule)
     
 
 

@@ -44,9 +44,8 @@ model:
   name: cae_resnet
 
 training:
-  epochs: 100
+  epochs: 1
   learning_rate: 0.001
-  batch_size: 22
-  device: cuda
+  batch_size: 2
   num_workers: 4
   seed: 42
