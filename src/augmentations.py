@@ -10,6 +10,7 @@ PyTorch Version: 2.7.1
 
 # == Imports ==========================================================
 
+import torch
 import numpy as np
 import cv2
 from skimage.util import random_noise
@@ -32,7 +33,8 @@ def build_augmentation_pipeline(aug_cfg):
     # Builds the augmentation list per the provided configurations
 
     transforms = []
-
+    if aug_cfg.get('resize', {}).get('enabled', True):
+        transforms.append(Resize(aug_cfg['resize']['size']))
     if aug_cfg.get('random_cropping', {}).get('enabled', True):
         transforms.append(RandomCrop(aug_cfg['random_cropping']['crop_size']))
     if aug_cfg.get('random_flip', True):
@@ -49,10 +51,30 @@ def build_augmentation_pipeline(aug_cfg):
     if aug_cfg.get('intensity_scaling', {}).get('enabled', True):
         transforms.append(ChannelWiseIntensityScaling(aug_cfg['intensity_scaling']['scale_range']))
 
+    transforms.append(ToTensor)
+
     return Compose(transforms) 
 
 
 # == Image Augmentations Classes ======================================
+
+## 0. Resize to (224x224)
+class Resize:
+    def __init__(self, size):
+        self.size = size
+    def __call__(self, img):
+        img = np.transpose(img, (2, 0, 1)) # (C, H, W) -> (H, W, C)
+        img = cv2.resize(img, self.size, interpolation = cv2.INTER_AREA)
+        img = np.transpose(img, (2, 0, 1)) # (H, W, C) -> (C, H, W)
+        return img
+    
+## 1. Tensor Conversion
+class ToTensor:
+    def __init__(self):
+        pass
+    def __call__(self, img):
+        return torch.from_numpy(img).float()
+
 
 ## 1. Spatial Augmentation
 

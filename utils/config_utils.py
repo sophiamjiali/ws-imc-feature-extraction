@@ -8,14 +8,13 @@ Date:            06-12-2025
 PyTorch Version: 2.7.1
 """
 
-import random
+import numpy as np
 import argparse
 import yaml
 import os
 import re
 
 from readimc import MCDFile
-from datasets.ws_dataset import WSDataset
 
 
 def parse_args():
@@ -42,23 +41,6 @@ def get_image_paths_from_dir(image_dir, extensions = {'.tiff'}):
         if os.path.splitext(file_name)[1].lower() in extensions:
             image_paths.append(os.path.join(image_dir, file_name))
     return sorted(image_paths)
-
-
-def build_datasets(image_paths = '', patch_size = (200,200), transforms = None):
-    # Builds the train, validation, and test datasets
-
-    random.shuffle(image_paths)
-    n = len(image_paths)
-
-    train_paths = image_paths[:int(0.7 * n)]
-    val_paths = image_paths[int(0.7 * n):int(0.85 * n)]
-    test_paths = image_paths[int(0.85 * n):]
-
-    train_dataset = WSDataset(train_paths, patch_size, transforms)
-    val_dataset = WSDataset(val_paths, patch_size, transforms)
-    test_dataset = WSDataset(test_paths, patch_size, transforms)
-
-    return train_dataset, val_dataset, test_dataset
 
 
 def load_image(mcd_path):

@@ -18,8 +18,8 @@ class CAELightningModule(L.LightningModule):
     def __init__(self, autoencoder, lr = 1e-3):
         super().__init__()
         self.autoencoder = autoencoder
-        self.save_hyperparameters()
         self.lr = lr
+        self.save_hyperparameters(ignore = ['autoencoder'])
 
     def forward(self, x):
         return self.autoencoder(x)

@@ -16,8 +16,8 @@ from src.train import train_cae
 from utils.loggers import get_loggers
 from utils.callbacks import get_callbacks
 
-from augmentations import build_augmentation_pipeline
-from utils.config_utils import parse_args, load_config, get_image_paths_from_dir, build_datasets, load_panel
+from src.augmentations import build_augmentation_pipeline
+from utils.config_utils import parse_args, load_config, get_image_paths_from_dir, load_panel
 
 
 def main():
@@ -42,22 +42,16 @@ def main():
     ## Initialize the augmentation pipeline and build the datasets
     data_transforms = build_augmentation_pipeline(aug_cfg)
     image_paths = get_image_paths_from_dir(dir_cfg.get('processed_dir'))
-    panel = load_panel(config.get('panel'))
+    panel = load_panel(dir_cfg.get('panel'))
 
-    # Datasets handle image loading and preprocessing on the fly
-    train_dataset, val_dataset, test_dataset = build_datasets(
+    # Datamodule initializes the train/test datasets and loaders
+    datamodule = WSDataModule(
         image_paths = image_paths,
         patch_size = preproc_cfg.get('patch_size'),
+        stride = preproc_cfg.get('stride'),
+        preproc_cfg = preproc_cfg,
         transforms = data_transforms,
         panel = panel,
-        preproc_cfg = config.get('preprocessing')
-    )
-
-    datamodule = WSDataModule(
-        train_dataset = train_dataset,
-        val_dataset = val_dataset,
-        test_dataset = test_dataset,
-        predict_dataset = None,
         batch_size = train_cfg.get('batch_size'),
         num_workers = train_cfg.get('num_workers')
     )
@@ -71,7 +65,8 @@ def main():
             datamodule = datamodule,
             max_epochs = train_cfg.get('epochs'),
             loggers = loggers,
-            callbacks = callbacks
+            callbacks = callbacks,
+            strategy = "ddp_notebook"
         )
 
         # process the result, store the model if best (?)

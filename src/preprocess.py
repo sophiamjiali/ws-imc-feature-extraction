@@ -16,7 +16,15 @@ from scipy.stats.mstats import winsorize
 from scipy.ndimage import median_filter
 from sklearn.preprocessing import MinMaxScaler
 
-from utils.config_utils import load_image
+# == Entry-point Main Function =========================================
+
+def preprocess_image(img, markers, panel, preproc_cfg = None):
+    # Wraps preprocesses the provided image
+
+    img = remove_background_stains(img, panel, markers)
+    img = normalize(img, preproc_cfg.get('normalize'))
+
+    return img
 
 # == Preprocessing Functions ===========================================
 

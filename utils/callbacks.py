@@ -8,8 +8,8 @@ Date:            06-15-2025
 PyTorch Version: 2.7.1
 """
 
-from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor
-from pytorch_lightning import Callback
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor, LearningRateFinder
+from lightning.pytorch import Callback
 
 # Removed EarlyStopping for now, just want to run vanilla
 

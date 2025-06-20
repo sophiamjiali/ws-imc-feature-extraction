@@ -33,12 +33,12 @@ class ResNetEncoder(nn.Module):
             self,
             base_model = 'resnet18',
             in_channels = 52,
-            pretrained = False):
+            weights = None):
         
         # Initializes a pre-built ResNet model
         super().__init__()
         resnet_constructor = getattr(models, base_model)
-        resnet = resnet_constructor(pretrained = pretrained)
+        resnet = resnet_constructor(weights = weights)
 
         # Modify the first convolutional layer for the marker channels
         if in_channels != 3:
@@ -48,7 +48,7 @@ class ResNetEncoder(nn.Module):
             resnet.conv1 = nn.Conv2d(
                 in_channels = in_channels,
                 out_channels = original_conv.out_channels,
-                kernel_si = original_conv.kernel_size,
+                kernel_size = original_conv.kernel_size,
                 stride = original_conv.stride,
                 padding = original_conv.padding,
                 bias = original_conv.bias is not None
@@ -65,10 +65,8 @@ class Decoder(nn.Module):
     # Initializes a custom decoder
 
     def __init__(self, in_channels = 512, out_channels = 52):
-        
         super().__init__()
-
-        self.model = nn.sequential(
+        self.model = nn.Sequential(
             nn.ConvTranspose2d(in_channels, 256, 3, 2, 1, 1),
             nn.ReLU(),
             nn.ConvTranspose2d(256, 128, 3, 2, 1, 1),

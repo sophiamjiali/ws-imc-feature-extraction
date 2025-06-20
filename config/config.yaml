@@ -1,14 +1,10 @@
 # == General =============================================
 directories:
-  mcd_dir: /data/raw
-  tiff_dir: /data/processed
-  processed_dir: /data/processed
+  mcd_dir: /ddn_exa/campbell/datasets/5-um-PDAC/data/5_um_PDAC_MCDs
   logs:
-    tensorboard: /results/logs/tensorboard
-    csv: /results/logs/csv
-  panel: /...
-
-  
+    tensorboard: /ddn_exa/campbell/datasets/5-um-PDAC/results/logs/tensorboard
+    csv: /ddn_exa/campbell/datasets/5-um-PDAC/results/logs/tensorboard
+  panel: /ddn_exa/campbell/datasets/5-um-PDAC/data/panels/5_um_PDAC_consolidated_panel.csv
 
 # == Preprocessing ===============================================
 preprocessing:
@@ -24,6 +20,9 @@ preprocessing:
   bio_content_threshold: 0.10
 
 augmentation:
+  resize:
+    enabled: true
+    size: (224, 224)
   random_cropping:
     enabled: false
     crop_size: 128
