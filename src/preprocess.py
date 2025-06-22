@@ -106,7 +106,7 @@ def extract_patch(img,
     # Extracts a patch starting at (X,Y), padding if necessary
     
     y_end = min(coords[0] + patch_size[0], img_shape[0])
-    x_end = min(coords[1] + patch_size[1], img_shape[0])
+    x_end = min(coords[1] + patch_size[1], img_shape[1])
     
     patch = img[:, coords[0]:y_end, coords[1]:x_end]
 
@@ -116,7 +116,7 @@ def extract_patch(img,
     if pad_h > 0 or pad_w > 0:
         patch = np.pad(
             patch,
-            ((0, 0, 0), (0, pad_h), (0, pad_w)),
+            ((0, 0), (0, pad_h), (0, pad_w)),
             mode = "constant"
         )
 

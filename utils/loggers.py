@@ -9,10 +9,14 @@ PyTorch Version: 2.7.1
 """
 
 from lightning.pytorch.loggers import TensorBoardLogger, CSVLogger, WandbLogger
+import wandb
 
 
 def get_loggers(log_dir, name):
     # Initializes Tensorboard and CSV loggers for model training and evaluation
+
+    # Initialize and log into weights and biases (wandb)
+    wandb.login()
 
     return [
         TensorBoardLogger(
@@ -26,7 +30,5 @@ def get_loggers(log_dir, name):
         WandbLogger(
             log_model = "all"
         )
-
-        # add weights and bias logger
     ]
 

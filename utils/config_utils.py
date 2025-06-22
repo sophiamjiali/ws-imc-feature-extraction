@@ -21,7 +21,7 @@ def parse_args():
     # Parse command-line arguments
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type = str, required = True,
+    parser.add_argument(' --config', type = str, required = True,
                          help = 'Path to YAML config file')
     return parser.parse_args()
 
@@ -33,7 +33,7 @@ def load_config(path):
         return yaml.safe_load(f)
     
 
-def get_image_paths_from_dir(image_dir, extensions = {'.tiff'}):
+def get_image_paths_from_dir(image_dir, extensions = {'.mcd'}):
     # Returns a list of image file paths from the provided image directory
 
     image_paths = []

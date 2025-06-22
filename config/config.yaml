@@ -8,21 +8,21 @@ directories:
 
 # == Preprocessing ===============================================
 preprocessing:
-  denoise_size: (1, 3, 3)
+  denoise_size: [1, 3, 3]
   background_threshold: 5
   normalize:
     winsorization:
       enabled: true
       quantile: 0.01
     min_max_scale: true
-  patch_size: 200
-  stride: 200
+  patch_size: [200, 200]
+  stride: [200, 200]
   bio_content_threshold: 0.10
 
 augmentation:
   resize:
     enabled: true
-    size: (224, 224)
+    size: [224, 224]
   random_cropping:
     enabled: false
     crop_size: 128
@@ -35,7 +35,7 @@ augmentation:
   gaussian_noise: false
   intensity_scaling:
     enabled: false
-    scale_range: (0.8, 1.2)
+    scale_range: [0.8, 1.2]
   
   # == Architecture ===============================================
 

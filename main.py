@@ -10,7 +10,7 @@ PyTorch Version: 2.7.1
 
 
 from datamodules.ws_datamodule import WSDataModule
-import pytorch_lightning as pl
+from lightning import seed_everything
 
 from src.train import train_cae
 from utils.loggers import get_loggers
@@ -33,7 +33,8 @@ def main():
     aug_cfg = config.get('augmentation')
 
     ## Set the seed for all subsequent processes
-    pl.seed_everything(train_cfg.get('seed'), workers = True)
+    seed_everything(train_cfg.get('seed'), workers = True)
+
 
     # Initialize loggers and callbacks: TensorBoard, CSV, Checkpoints
     loggers = get_loggers(dir_cfg.get('logs'), model_cfg.get('name'))
@@ -41,7 +42,7 @@ def main():
 
     ## Initialize the augmentation pipeline and build the datasets
     data_transforms = build_augmentation_pipeline(aug_cfg)
-    image_paths = get_image_paths_from_dir(dir_cfg.get('processed_dir'))
+    image_paths = get_image_paths_from_dir(dir_cfg.get('mcd_dir'))
     panel = load_panel(dir_cfg.get('panel'))
 
     # Datamodule initializes the train/test datasets and loaders
@@ -55,6 +56,7 @@ def main():
         batch_size = train_cfg.get('batch_size'),
         num_workers = train_cfg.get('num_workers')
     )
+    datamodule.setup()
 
     #latent_dimensions = [64, 128, 256, 384]
     latent_dimensions = 64
