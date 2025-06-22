@@ -1,6 +1,5 @@
 # ws-imc-feature-extraction
-A self-supervised ResNet CNN trained with SimCLR for feature extraction of whole-slide IMC via contrastive learning.
-
+A self-supervised convolutional autoencoder (CAE) with a ResNet encoder for feature extraction of whole-slide IMC via contrastive learning.
 
 DevNotes:
 - picked ResNet-18 as it seemed the most common for bioimaging
