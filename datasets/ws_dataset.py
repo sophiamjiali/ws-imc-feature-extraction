@@ -47,12 +47,17 @@ class WSDataset(Dataset):
 
         self.epoch_coords = []
 
-        img_indices = random.shuffle(list(self.patch_coords.keys()))
+        img_indices = list(self.patch_coords.keys())
+        random.shuffle(img_indices)
 
         for img_idx in img_indices:
             patches = self.patch_coords[img_idx][:]
             random.shuffle(patches)
             self.epoch_coords.extend([(img_idx, patch) for patch in patches])
+
+    def on_epoch_start(self):
+        # Randomizes patch order per image
+        self._prepare_epoch_indices()
 
     def __len__(self):
         return len(self.epoch_coords)
@@ -77,7 +82,7 @@ class WSDataset(Dataset):
             self._cache_img_idx = img_idx
 
         # Extract a patch with sufficient biological content
-        H, W = self._cache_img[-2:]
+        H, W = self._cache_img.shape[-2:]
         patch = extract_patch(self._cache_img, self.patch_size, (y, x), (H, W))
 
         # Augment the patch and convert to Tensor object

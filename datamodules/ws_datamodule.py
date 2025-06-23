@@ -7,13 +7,13 @@ Date:            06-10-2025
 
 PyTorch Version: 2.7.1
 """
-from pytorch_lightning import LightningDataModule
+from lightning.pytorch import LightningDataModule
 from torch.utils.data import DataLoader
 from utils.config_utils import load_image_and_markers
 from src.preprocess import preprocess_image, extract_patch, has_sufficient_content
-from collections import defaultdict
 from datasets.ws_dataset import WSDataset
 import random
+from multiprocessing import Pool
 
 class WSDataModule(LightningDataModule):
 
@@ -39,29 +39,38 @@ class WSDataModule(LightningDataModule):
         self.num_workers = num_workers
         
 
-    def _precompute_patches(self, image_paths):
+    def _precompute_patches(self, args):
         # Precomputes valid patch coordinates for each image
 
-        image_patches = defaultdict(list)
-
-        for img_idx, img_path in enumerate(image_paths):
+        # Load and preprocess the image
+        img_idx, img_path = args
             
-            # Load and preprocess the image
-            img, markers = load_image_and_markers(img_path)
-            img = preprocess_image(img, markers, self.panel, self.preproc_cfg)
-            H, W = img.shape[-2:]
+        img, markers = load_image_and_markers(img_path)
+        img = preprocess_image(img, markers, self.panel, self.preproc_cfg)
+        H, W = img.shape[-2:]
 
-            for y in range(0, H, self.stride[0]):
-                for x in range(0, W, self.stride[1]):
+        # Compute and quality-control each possible patch of the image
+        patch_coords = []
+        for y in range(0, H, self.stride[0]):
+            for x in range(0, W, self.stride[1]):
 
-                    # Extract and pad the patch if necessary
-                    patch = extract_patch(img, self.patch_size, (y, x), (H, W))
-                    
-                    # Screen for if the patch has sufficient biological content
-                    if has_sufficient_content(patch, self.preproc_cfg.get('bio_content_threshold')):
-                        image_patches[img_idx].append((y, x))
+                # Extract and pad the patch if necessary
+                patch = extract_patch(img, self.patch_size, (y, x), (H, W))
+                
+                # Screen for if the patch has sufficient biological content
+                if has_sufficient_content(patch, self.preproc_cfg.get('bio_content_threshold')):
+                    patch_coords.append((y, x))
 
-        return image_patches
+        return img_idx, patch_coords
+    
+
+    def _parallel_precompute_patches(self, image_paths):
+        # Parallelization adapter for patch precomputation
+
+        args = list(enumerate(image_paths))
+        with Pool() as pool:
+            results = pool.map(self._precompute_patches, args)
+        return dict(results)
 
 
     def setup(self, stage = None):
@@ -73,9 +82,9 @@ class WSDataModule(LightningDataModule):
         val_paths = self.image_paths[int(0.7 * n):int(0.85 * n)]
         test_paths = self.image_paths[int(0.85 * n):]
 
-        self.train_patch_coords = self._precompute_patches(train_paths)
-        self.val_patch_coords = self._precompute_patches(val_paths)
-        self.test_patch_coords = self._precompute_patches(test_paths)
+        self.train_patch_coords = self._parallel_precompute_patches(train_paths)
+        self.val_patch_coords = self._parallel_precompute_patches(val_paths)
+        self.test_patch_coords = self._parallel_precompute_patches(test_paths)
 
         self.train_dataset = WSDataset(
             image_paths = train_paths,
@@ -150,7 +159,7 @@ class WSDataModule(LightningDataModule):
         return None
     
     def on_train_epoch_start(self):
-        # Randomizes the patch orders, maintaining image order (already random)
+        # Randomizes the patch orders
         self.train_dataset.on_epoch_start()
 
     def on_validation_epoch_start(self):

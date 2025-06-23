@@ -51,4 +51,4 @@ class CAELightningModule(L.LightningModule):
         return self.autoencoder.encoder(input)
     
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), self.lr)
+        return torch.optim.Adam(self.parameters(), self.lr)
