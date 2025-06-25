@@ -41,10 +41,12 @@ augmentation:
 
 model:
   name: cae_resnet
+  in_channels: 40
 
 training:
-  epochs: 1
+  epochs: 10
   learning_rate: 0.001
-  batch_size: 2
-  num_workers: 4
+  batch_size: 32
+  num_devices: 1
+  num_workers: 8
   seed: 42

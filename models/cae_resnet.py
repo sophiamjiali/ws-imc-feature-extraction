@@ -32,7 +32,7 @@ class ResNetEncoder(nn.Module):
     def __init__(
             self,
             base_model = 'resnet18',
-            in_channels = 52,
+            in_channels = 40,
             weights = None):
         
         # Initializes a pre-built ResNet model
@@ -58,13 +58,13 @@ class ResNetEncoder(nn.Module):
         self.features = nn.Sequential(*list(resnet.children())[:-2])
 
     def forward(self, x):
-        return self.model(x)
+        return self.features(x)
     
 
 class Decoder(nn.Module):
     # Initializes a custom decoder
 
-    def __init__(self, in_channels = 512, out_channels = 52):
+    def __init__(self, in_channels = 512, out_channels = 40):
         super().__init__()
         self.model = nn.Sequential(
             nn.ConvTranspose2d(in_channels, 256, 3, 2, 1, 1),

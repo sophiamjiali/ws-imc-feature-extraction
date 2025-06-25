@@ -32,17 +32,17 @@ class CAELightningModule(L.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss = self._get_reconstruction_loss(batch)
-        self.log('train_loss', loss, on_step = False, on_epoch = True, prog_bar = True, logger = True)
+        self.log('train_loss', loss, on_step = False, on_epoch = True, prog_bar = True, logger = True, sync_dist = True)
         return loss
     
     def validation_step(self, batch, batch_idx):
         loss = self._get_reconstruction_loss(batch)
-        self.log("val_loss", loss, on_step = False, on_epoch = True, prog_bar = True, logger = True)
+        self.log("val_loss", loss, on_step = False, on_epoch = True, prog_bar = True, logger = True, sync_dist = True)
         return loss
     
     def test_step(self, batch, batch_idx):
         loss = self._get_reconstruction_loss(batch)
-        self.log("test_loss", loss, on_step = False, on_epoch = True, prog_bar = True, logger = True)
+        self.log("test_loss", loss, on_step = False, on_epoch = True, prog_bar = True, logger = True, sync_dist = True)
         return loss
 
     def predict_step(self, batch, batch_idx):

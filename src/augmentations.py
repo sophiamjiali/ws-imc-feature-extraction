@@ -43,15 +43,15 @@ def build_augmentation_pipeline(aug_cfg):
     if aug_cfg.get('random_rotation', True):
         transforms.append(RandomRotation())
     if aug_cfg.get('random_translation', {}).get('enabled', True):
-        transforms.append(RandomTranslation(aug_cfg['random_translation']['max_shift']))
+        transforms.append(RandomTranslation(max_shift = aug_cfg['random_translation']['max_shift']))
     if aug_cfg.get('gaussian_blur', True):
         transforms.append(ChannelWiseGaussianBlur())
     if aug_cfg.get('gaussian_noise', True):
         transforms.append(ChannelWiseGaussianNoise())
     if aug_cfg.get('intensity_scaling', {}).get('enabled', True):
-        transforms.append(ChannelWiseIntensityScaling(aug_cfg['intensity_scaling']['scale_range']))
+        transforms.append(ChannelWiseIntensityScaling(scale_range = aug_cfg['intensity_scaling']['scale_range']))
 
-    transforms.append(ToTensor)
+    transforms.append(ToTensor())
 
     return Compose(transforms) 
 
@@ -63,7 +63,7 @@ class Resize:
     def __init__(self, size):
         self.size = size
     def __call__(self, img):
-        img = np.transpose(img, (2, 0, 1)) # (C, H, W) -> (H, W, C)
+        img = np.transpose(img, (1, 2, 0)) # (C, H, W) -> (H, W, C)
         img = cv2.resize(img, self.size, interpolation = cv2.INTER_AREA)
         img = np.transpose(img, (2, 0, 1)) # (H, W, C) -> (C, H, W)
         return img

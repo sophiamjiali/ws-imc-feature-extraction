@@ -33,7 +33,7 @@ def train_cae(
     trainer = Trainer(
         devices = 1,
         max_epochs = 2,
-        accelerator = "gpu",
+        accelerator = "auto",
         strategy = strategy,
         benchmark = True,        # Fixed input size, speeds up training
         logger = loggers,

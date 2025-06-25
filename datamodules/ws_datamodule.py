@@ -26,7 +26,7 @@ class WSDataModule(LightningDataModule):
             transforms = None,
             panel = None,
             batch_size = 32,
-            num_workers = 4
+            num_workers = 8
         ):
         super().__init__()
         self.image_paths = image_paths
