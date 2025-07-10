@@ -13,13 +13,18 @@ from lightning.pytorch import Callback
 
 # Removed EarlyStopping for now, just want to run vanilla
 
-def get_callbacks():
+def get_callbacks(checkpoints_path, args):
     # Wrapper for fetching all defined callbacks
+
+    epochs, learning_rate, batch_size, seed = args
+    
     return [
         ModelCheckpoint(
             monitor = "val_loss",
             save_top_k = 1,
-            mode = "min"
+            mode = "min",
+            dirpath = checkpoints_path,
+            filename = f"e{epochs}_lr{learning_rate}_bs{batch_size}_s{seed}-{{epoch}}_{{val_loss:.5f}}"
         ),
         LearningRateMonitor(
             logging_interval = "epoch"
@@ -27,14 +32,8 @@ def get_callbacks():
         PrintCallback()
     ]
 
-
-def get_checkpoint_callbacks(monitor = "val_loss", save_top_k = 1, mode ="min"):
-    # i honestly dont remember what this is for i hope its not important
-    return 
-
-
 class PrintCallback(Callback):
     def on_train_start(self, trainer, pl_module):
-        print("Training is started!")
+        print("[PrintCallback] Training is started ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     def on_train_end(self, trainer, pl_module):
-        print("Training is done.")
+        print("[PrintCallback]: Training is done ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")

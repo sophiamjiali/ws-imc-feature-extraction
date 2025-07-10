@@ -10,11 +10,16 @@ PyTorch Version: 2.7.1
 
 # == Imports ==========================================================
 
+import torch
 from torch.utils.data import Dataset
 from utils.config_utils import load_image, load_image_and_markers
+import numpy as np
+import os
 
-from src.preprocess import preprocess_image, extract_patch
+from src.preprocess import preprocess_image, extract_patch, has_sufficient_content
 import random
+
+import time
 
 # == Class Definitions ================================================
 
@@ -40,6 +45,7 @@ class WSDataset(Dataset):
         self._cache_img = None
 
         # Initialize random image and patch order
+        #print("Dataset: Initializing a new dataset, preparing epoch indices...")
         self._prepare_epoch_indices()
         
     def _prepare_epoch_indices(self):
@@ -57,6 +63,7 @@ class WSDataset(Dataset):
 
     def on_epoch_start(self):
         # Randomizes patch order per image
+        print("[Dataset] On epoch start - shuffling patch and image order")
         self._prepare_epoch_indices()
 
     def __len__(self):
@@ -67,6 +74,8 @@ class WSDataset(Dataset):
         
     def __getitem__(self, patch_idx):
         # Fetches the next patch and augmented views for input to the model
+
+        t0 = time.time()
 
         img_idx, (y, x), = self.epoch_coords[patch_idx]
 
@@ -81,12 +90,16 @@ class WSDataset(Dataset):
             self._cache_img = img
             self._cache_img_idx = img_idx
 
+            #print(f"[Dataset] Caching image {img_idx} of shape {img.shape}")
+
         # Extract a patch with sufficient biological content
         H, W = self._cache_img.shape[-2:]
         patch = extract_patch(self._cache_img, self.patch_size, (y, x), (H, W))
 
+        print(f"[PID {os.getpid()}] -- [{time.time() - t0:.3f}s] Fetching patch {patch_idx} with coordinates {self.epoch_coords[patch_idx]} and shape {patch.shape}")
+
         # Augment the patch and convert to Tensor object
         patch = self.transforms(patch)
-        
+
         # Input and target are the same for CAE
         return patch, patch

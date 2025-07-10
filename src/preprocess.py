@@ -16,6 +16,8 @@ from scipy.stats.mstats import winsorize
 from scipy.ndimage import median_filter
 from sklearn.preprocessing import MinMaxScaler
 
+
+
 # == Entry-point Main Function =========================================
 
 def preprocess_image(img, markers, panel, preproc_cfg = None):
@@ -30,6 +32,7 @@ def preprocess_image(img, markers, panel, preproc_cfg = None):
 
 ## 2. Remove Background Stains
 def remove_background_stains(img, panel, markers):
+
     # Removes background stains by omittance in markers
     background_idx = [idx for idx, marker in enumerate(markers) if marker not in panel]
 
@@ -100,7 +103,7 @@ def batch_effects():
 
 ## 6. Patch Extraction: divide whole-slide images via sliding window approach
 def extract_patch(img, 
-                  patch_size = (200, 200), 
+                  patch_size = [200, 200], 
                   coords = (0, 0),
                   img_shape = (1000, 1000)):
     # Extracts a patch starting at (X,Y), padding if necessary

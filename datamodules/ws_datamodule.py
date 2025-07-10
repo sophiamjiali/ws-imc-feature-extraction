@@ -14,6 +14,8 @@ from src.preprocess import preprocess_image, extract_patch, has_sufficient_conte
 from datasets.ws_dataset import WSDataset
 import random
 from multiprocessing import Pool
+import os
+import pickle
 
 class WSDataModule(LightningDataModule):
 
@@ -72,19 +74,58 @@ class WSDataModule(LightningDataModule):
             results = pool.map(self._precompute_patches, args)
         return dict(results)
 
+    def _get_patch_coords_path(self, split):
+        # Fetch the patch coords path
+        return os.path.join("patch_coords", f"{split}_patch_coords.pkl")
+
+    def _load_patch_coords(self, split):
+        # Loads the patch coords dictionary
+        path = self._get_patch_coords_path(split)
+        if os.path.exists(path):
+            with open(path, "rb") as f:
+                return pickle.load(f)
+        return None
+
+    def _save_patch_coords(self, split, coords):
+        # Saves a patch coord dictionary
+        os.makedirs("patch_coords", exist_ok=True)
+        path = self._get_patch_coords_path(split)
+        with open(path, "wb") as f:
+            pickle.dump(coords, f)
 
     def setup(self, stage = None):
         # Initializes the train, validation, test, and predict datasets
 
+        print("[DataModule] Beginning DataModule Setup ==================================")
+
+        # Initialize the ratioed image paths for each dataset
         random.shuffle(self.image_paths)
         n = len(self.image_paths)
         train_paths = self.image_paths[:int(0.7 * n)]
         val_paths = self.image_paths[int(0.7 * n):int(0.85 * n)]
         test_paths = self.image_paths[int(0.85 * n):]
+        
+        splits = {
+            "train": train_paths,
+            "val": val_paths,
+            "test": test_paths
+        }
 
-        self.train_patch_coords = self._parallel_precompute_patches(train_paths)
-        self.val_patch_coords = self._parallel_precompute_patches(val_paths)
-        self.test_patch_coords = self._parallel_precompute_patches(test_paths)
+        # Check to see if the patch coords were already computed
+        patch_coords = {}
+        for split, paths in splits.items():
+            coords = self._load_patch_coords(split)
+            if coords is None:
+                print(f"[DataModule] {split} patch coords is not cached, computing...")
+                coords = self._parallel_precompute_patches(paths)
+                self._save_patch_coords(split, coords)
+            else:
+                print(f"[DataModule] {split} patch coords are cached, loading...")
+            patch_coords[split] = coords
+
+        self.train_patch_coords = patch_coords["train"]
+        self.val_patch_coords = patch_coords["val"]
+        self.test_patch_coords = patch_coords["test"]
 
         self.train_dataset = WSDataset(
             image_paths = train_paths,
@@ -115,51 +156,62 @@ class WSDataModule(LightningDataModule):
         )
         self.predict_dataset = None
 
+        print("[DataModule] Completed DataModule Setup ==================================")
+
 
     def train_dataloader(self):
+        print("[DataModule] Initializing train dataloader")
         return DataLoader(
             self.train_dataset,
             batch_size = self.batch_size,
             num_workers = self.num_workers,
             pin_memory = True,
-            drop_last = True
+            drop_last = True,
+            shuffle = False
         )
     
     def val_dataloader(self):
         if self.val_dataset is not None:
+            print("[DataModule] Initializing evaluate dataloader")
             return DataLoader(
                 self.val_dataset,
                 batch_size = self.batch_size,
                 num_workers = self.num_workers, 
                 pin_memory = True,
-                drop_last = True
+                drop_last = True,
+                shuffle = False
             )
         return None
     
     def test_dataloader(self):
         if self.test_dataset is not None:
+            print("[DataModule] Initializing test dataloader")
             return DataLoader(
                 self.test_dataset,
                 batch_size = self.batch_size,
                 num_workers = self.num_workers,
                 pin_memory = True,
-                drop_last = False
+                drop_last = False,
+                shuffle = False
             )
         return None
     
     def predict_dataloader(self):
         if self.predict_dataset is not None:
+            print("[DataModule] Initializing predict dataloader")
             return DataLoader(
                 self.predict_dataset,
                 batch_size = self.batch_size,
                 num_workers = self.num_workers,
+                worker_init_fn = worker_init_fn,
                 pin_memory = True,
-                drop_last = False
+                drop_last = False,
+                shuffle = False
             )
         return None
     
     def on_train_epoch_start(self):
-        # Randomizes the patch orders
+        # Randomizes the patch orders, maintaining image order (already random)
         self.train_dataset.on_epoch_start()
 
     def on_validation_epoch_start(self):

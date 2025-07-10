@@ -12,13 +12,13 @@ from lightning.pytorch.loggers import TensorBoardLogger, CSVLogger, WandbLogger
 import wandb
 
 
-def get_loggers(log_dir, name):
+def get_loggers(log_dir, name, hyperparams = None):
     # Initializes Tensorboard and CSV loggers for model training and evaluation
 
     # Initialize and log into weights and biases (wandb)
     wandb.login()
 
-    return [
+    loggers = [
         TensorBoardLogger(
             save_dir = log_dir.get('tensorboard', ''),
             name = name
@@ -28,7 +28,21 @@ def get_loggers(log_dir, name):
             name = name
         ),
         WandbLogger(
-            log_model = "all"
+            save_dir = log_dir.get('wandb', ''),
+            log_model = "best"
         )
     ]
 
+    # Log hyperparameters if provided
+    if hyperparams is not None:
+        for logger in loggers:
+            if hasattr(logger, "log_hyperparams"):
+                logger.log_hyperparams(hyperparams)
+
+        # Update wandb config directly
+        try:
+            wandb.config.update(hyperparams)
+        except Exception:
+            print("Could not update wandb config for additional hyperparameters")
+
+    return loggers

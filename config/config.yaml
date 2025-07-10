@@ -1,10 +1,19 @@
 # == General =============================================
 directories:
   mcd_dir: /ddn_exa/campbell/datasets/5-um-PDAC/data/5_um_PDAC_MCDs
+  patch_dir: /ddn_exa/campbell/datasets/5-um-PDAC/data/5_um_PDAC_patches
   logs:
-    tensorboard: /ddn_exa/campbell/datasets/5-um-PDAC/results/logs/tensorboard
-    csv: /ddn_exa/campbell/datasets/5-um-PDAC/results/logs/tensorboard
+    tensorboard: /ddn_exa/campbell/sli/ws_cae_training/logs/tensorboard
+    csv: /ddn_exa/campbell/sli/ws_cae_training/logs/csv
+    wandb: /ddn_exa/campbell/sli/ws_cae_training/logs/wandb
+  checkpoints: /ddn_exa/campbell/sli/ws_cae_training/checkpoints
   panel: /ddn_exa/campbell/datasets/5-um-PDAC/data/panels/5_um_PDAC_consolidated_panel.csv
+
+logging:
+    log_channels: ['In115', 'Y89', 'Yb174']
+    log_patches: ['1085471_y1000_x800.npy', '1230064_y1200_x1000.npy', '49231_y1200_x400.npy']
+    log_step_n: 10
+    
 
 # == Preprocessing ===============================================
 preprocessing:
@@ -18,11 +27,9 @@ preprocessing:
   patch_size: [200, 200]
   stride: [200, 200]
   bio_content_threshold: 0.10
+  resize_size: [224, 224]
 
 augmentation:
-  resize:
-    enabled: true
-    size: [224, 224]
   random_cropping:
     enabled: false
     crop_size: 128
@@ -44,9 +51,9 @@ model:
   in_channels: 40
 
 training:
-  epochs: 10
+  epochs: 500
   learning_rate: 0.001
   batch_size: 32
   num_devices: 1
-  num_workers: 8
+  num_workers: 4
   seed: 42
